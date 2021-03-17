@@ -41,6 +41,8 @@ class MCP_CAN
     INT8U   m_nfilhit;
     INT8U   SPICS;
 
+    char   m_nMode = MODE_NORMAL;
+
 /*
 *  mcp2515 driver function 
 */
@@ -97,7 +99,7 @@ private:
 
 public:
     MCP_CAN(INT8U _CS);
-    INT8U begin(INT8U speedset, const INT8U clockset = MCP_16MHz);  /* init can                     */
+    INT8U begin(INT8U speedset, const INT8U clockset = MCP_16MHz, bool listen = false);  /* init can */
     INT8U init_Mask(INT8U num, INT8U ext, INT32U ulData);           /* init Masks                   */
     INT8U init_Filt(INT8U num, INT8U ext, INT32U ulData);           /* init filters                 */
     INT8U sendMsgBuf(INT32U id, INT8U ext, INT8U rtr, INT8U len, INT8U *buf);   /* send buf                     */
@@ -110,6 +112,7 @@ public:
     INT32U getCanId(void);                                          /* get can id when receive      */
     INT8U isRemoteRequest(void);                                    /* get RR flag when receive     */
     INT8U isExtendedFrame(void);                                    /* did we recieve 29bit frame?  */
+    INT8U setMode(INT8U mode);
 };
 
 #endif

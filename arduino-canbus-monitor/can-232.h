@@ -157,7 +157,7 @@ const INT8U lw232CanBaudRates[] //PROGMEM
 class Can232
 {
 public:
-    static void init(INT8U defaultCanSpeed = LW232_DEFAULT_CAN_RATE, const INT8U clock = LW232_DEFAULT_CLOCK_FREQ);
+    static void init(INT8U defaultCanSpeed = LW232_DEFAULT_CAN_RATE, const INT8U clock = LW232_DEFAULT_CLOCK_FREQ, bool listenOnly = false);
     static void setFilter(INT8U (*userFunc)(INT32U));
     static void loop();
     static void serialEvent();
@@ -166,7 +166,7 @@ private:
     static Can232* _instance;
     static Can232* instance();
 
-    void initFunc();
+    void initFunc(bool listenOnly);
     void setFilterFunc(INT8U (*userFunc)(INT32U));
     void loopFunc();
     void serialEventFunc();
@@ -202,7 +202,7 @@ private:
     INT8U receiveSingleFrame();
     INT8U isExtendedFrame();
     INT8U checkPassFilter(INT32U addr);
-    INT8U openCanBus();
+    INT8U openCanBus(bool listenOnly = false);
     
     INT8U sendMsgBuf(INT32U id, INT8U ext, INT8U rtr, INT8U len, INT8U *buf);
 

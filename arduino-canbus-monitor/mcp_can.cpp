@@ -88,8 +88,7 @@ void MCP_CAN::mcp2515_setRegister(const INT8U address, const INT8U value)
 
 /*********************************************************************************************************
 ** Function name:           mcp2515_setRegisterS
-** Descriptions:            set registerS
-*********************************************************************************************************/
+** Descriptions:            set registe*********************************************************************************************************/
 void MCP_CAN::mcp2515_setRegisterS(const INT8U address, const INT8U values[], const INT8U n)
 {
     INT8U i;
@@ -505,7 +504,7 @@ INT8U MCP_CAN::mcp2515_init(const INT8U canSpeed, const INT8U clock)            
         MCP_RXB_RX_STDEXT);
 #endif
                                                                         /* enter normal mode            */
-        res = mcp2515_setCANCTRL_Mode(MODE_NORMAL);                                                                
+        res = mcp2515_setCANCTRL_Mode(m_nMode);                                                                
         if (res)
         {
 #if DEBUG_MODE        
@@ -677,11 +676,17 @@ MCP_CAN::MCP_CAN(INT8U _CS)
 ** Function name:           init
 ** Descriptions:            init can and set speed
 *********************************************************************************************************/
-INT8U MCP_CAN::begin(INT8U speedset, const INT8U clockset)
+INT8U MCP_CAN::begin(INT8U speedset, const INT8U clockset, bool listen)
 {
     INT8U res = MCP2515_OK;
 
     SPI.begin();
+
+    if (listen)
+        m_nMode = MODE_LISTENONLY;
+    else
+        m_nMode = MODE_NORMAL;
+
     res = mcp2515_init(speedset, clockset);
     if (res == MCP2515_OK) return CAN_OK;
     else return CAN_FAILINIT;
@@ -718,7 +723,7 @@ INT8U MCP_CAN::init_Mask(INT8U num, INT8U ext, INT32U ulData)
     }
     else res =  MCP2515_FAIL;
     
-    res = mcp2515_setCANCTRL_Mode(MODE_NORMAL);
+    res = mcp2515_setCANCTRL_Mode(m_nMode);
     if(res > 0){
 #if DEBUG_MODE
     Serial.print("Enter normal mode fall\r\n"); 
@@ -788,7 +793,7 @@ INT8U MCP_CAN::init_Filt(INT8U num, INT8U ext, INT32U ulData)
         res = MCP2515_FAIL;
     }
     
-    res = mcp2515_setCANCTRL_Mode(MODE_NORMAL);
+    res = mcp2515_setCANCTRL_Mode(m_nMode);
     if(res > 0)
     {
 #if DEBUG_MODE
@@ -1068,6 +1073,23 @@ INT8U MCP_CAN::isExtendedFrame(void)
 {
     return m_nExtFlg;
 } 
+
+/*********************************************************************************************************
+** Function name:           setMode
+** Descriptions:            Set internal mode, e.g. normal, listenonly ect.
+*********************************************************************************************************/
+INT8U MCP_CAN::setMode(INT8U mode)
+{
+    auto res = mcp2515_setCANCTRL_Mode(mode);
+#if DEBUG_MODE
+    if(res > 0)
+    {
+      Serial.print("Enter setting mode fall\r\n"); 
+    }
+#endif
+    delay(10);
+    return res;
+}
 
 /*********************************************************************************************************
   END FILE

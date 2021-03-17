@@ -49,13 +49,13 @@ Can232* Can232::instance() {
     return _instance;
 }
 
-void Can232::init(INT8U defaultCanSpeed, const INT8U clock) {
+void Can232::init(INT8U defaultCanSpeed, const INT8U clock, bool listenOnly) {
     dbg_begin(LW232_DEFAULT_BAUD_RATE); // logging through software serial 
     dbg1("CAN ASCII. Welcome to debug");
 
     instance()->lw232CanSpeedSelection = defaultCanSpeed;
     instance()->lw232McpModuleClock = clock;
-    instance()->initFunc();
+    instance()->initFunc(listenOnly);
 }
 
 void Can232::setFilter(INT8U (*userFunc)(INT32U)) {
@@ -70,19 +70,18 @@ void Can232::serialEvent() {
     instance()->serialEventFunc();
 }
 
-void Can232::initFunc() {
+void Can232::initFunc(bool listenOnly) {
     if (!inputString.reserve(LW232_INPUT_STRING_BUFFER_SIZE)) {
         dbg0("inputString.reserve failed in initFunc. less optimal String work is expected");
     }
-    // lw232AutoStart = true; //todo: read from eeprom
-    // lw232AutoPoll = false; //todo: read from eeprom
-    //  lw232TimeStamp = //read from eeprom
-    //    lw232Message[0] = 'Z';    lw232Message[1] = '1'; exec();
-    //if (lw232AutoStart) {
-        inputString = "O\0x0D";
-        stringComplete = true;
-        loopFunc();
-    //}
+    
+    if (listenOnly)
+      inputString = "L\0x0D";
+    else
+      inputString = "O\0x0D";
+
+    stringComplete = true;
+    loopFunc();
 }
 
 void Can232::setFilterFunc(INT8U (*userFunc)(INT32U)) {
@@ -183,7 +182,7 @@ INT8U Can232::parseAndRunCommand() {
         case LW232_CMD_LISTEN:
         // L[CR] Open the CAN channel in listen only mode (receiving).
         if (lw232CanChannelMode == LW232_STATUS_CAN_CLOSED) {
-            ret = openCanBus();
+            ret = openCanBus(true);
             if (ret == LW232_OK) {
               lw232CanChannelMode = LW232_STATUS_CAN_OPEN_LISTEN;
             }
@@ -465,10 +464,10 @@ INT8U Can232::checkPassFilter(INT32U addr) {
 	return (*userAddressFilterFunc)(addr);
 }
 
-INT8U Can232::openCanBus() {
+INT8U Can232::openCanBus(bool listen) {
     INT8U ret = LW232_OK;
 #ifndef _MCP_FAKE_MODE_
-    if (CAN_OK != lw232CAN.begin(lw232CanSpeedSelection, lw232McpModuleClock))
+    if (CAN_OK != lw232CAN.begin(lw232CanSpeedSelection, lw232McpModuleClock, listen))
         ret = LW232_ERR;
 #endif
     return ret;
