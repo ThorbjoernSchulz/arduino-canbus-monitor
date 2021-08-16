@@ -21,8 +21,8 @@ void setup() {
 
   Serial.begin(LW232_DEFAULT_BAUD_RATE);      // default COM baud rate is 115200. 
     
-  Can232::init(CAN_500KBPS, MCP_8MHz, true);  // set default rate you need here and clock frequency of CAN shield.
-                                                // Typically it is 16MHz, but on some MCP2515 + TJA1050 it is 8Mhz
+  Can232::init(CAN_500KBPS, MCP_8MHz);        // set default rate you need here and clock frequency of CAN shield.
+                                              // Typically it is 16MHz, but on some MCP2515 + TJA1050 it is 8Mhz
 }
 
 void loop() {
